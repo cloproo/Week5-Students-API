@@ -1,0 +1,36 @@
+name: Week5 API - build and smoke test
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install .NET 10 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Build application
+        run: dotnet build StudentApi/StudentApi.csproj -c Release
+      - name: Start API and run integration smoke tests
+        env:
+          ASPNETCORE_ENVIRONMENT: Development
+          Jwt__Key: CI_ONLY_LONG_DEMO_KEY_REPLACE_IN_REAL_DEPLOYMENTS_45CHARS
+        run: |
+          set -euo pipefail
+          ASPNETCORE_URLS=http://127.0.0.1:5080 dotnet run --project StudentApi/StudentApi.csproj -c Release --no-build --no-launch-profile > /tmp/week5-server.log 2>&1 &
+          pid=$!
+          trap 'kill "$pid" 2>/dev/null || true' EXIT
+          for i in $(seq 1 50); do
+            if curl -fsS http://127.0.0.1:5080/health >/dev/null 2>&1; then break; fi
+            if ! kill -0 "$pid" 2>/dev/null; then cat /tmp/week5-server.log; exit 1; fi
+            sleep 1
+          done
+          if ! python3 scripts/smoke_test.py --base http://127.0.0.1:5080; then
+            cat /tmp/week5-server.log
+            exit 1
+          fi

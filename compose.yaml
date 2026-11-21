@@ -1,0 +1,28 @@
+services:
+  api:
+    build: .
+    ports:
+      - "5080:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      Jwt__Key: ${JWT_SECRET:?Copy .env.example to .env and set a strong secret}
+      ConnectionStrings__Postgres: Host=db;Port=5432;Database=students;Username=students_admin;Password=${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+    depends_on:
+      db:
+        condition: service_healthy
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: students
+      POSTGRES_USER: students_admin
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U students_admin -d students"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+volumes:
+  pgdata:

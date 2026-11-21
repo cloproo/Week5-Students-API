@@ -1,0 +1,62 @@
+@base = http://localhost:5080
+@token = REPLACE_AFTER_LOGIN
+@studentId = 1
+
+### Register (201; repeat gives 409)
+POST {{base}}/api/auth/register
+Content-Type: application/json
+
+{
+  "fullName": "Ahmed Ali",
+  "email": "ahmed.ali@example.com",
+  "password": "StrongP@ssw0rd2026"
+}
+
+### Login (200) — copy the returned token into @token
+POST {{base}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "ahmed.ali@example.com",
+  "password": "StrongP@ssw0rd2026"
+}
+
+### Me, via JWT claims
+GET {{base}}/api/auth/me
+Authorization: Bearer {{token}}
+
+### Create student (201 + Location)
+POST {{base}}/api/students
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "fullName": "Sara Mohammed",
+  "email": "sara.m@example.com",
+  "age": 21,
+  "department": "Computer Science"
+}
+
+### Search + filters + pagination
+GET {{base}}/api/students?search=sara&department=Computer%20Science&minAge=18&maxAge=30&page=1&pageSize=10
+Authorization: Bearer {{token}}
+
+### Get one (replace studentId)
+GET {{base}}/api/students/{{studentId}}
+Authorization: Bearer {{token}}
+
+### Update (200)
+PUT {{base}}/api/students/{{studentId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "fullName": "Sara Mohammed Updated",
+  "email": "sara.updated@example.com",
+  "age": 22,
+  "department": "Cybersecurity"
+}
+
+### Delete (204)
+DELETE {{base}}/api/students/{{studentId}}
+Authorization: Bearer {{token}}

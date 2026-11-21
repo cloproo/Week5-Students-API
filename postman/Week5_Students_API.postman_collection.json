@@ -1,0 +1,278 @@
+{
+  "info": {
+    "name": "Week 5 - ASP.NET Core JWT Students API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Use Collection Runner in order (01..10). Register and Create set unique emails dynamically."
+  },
+  "item": [
+    {
+      "name": "01 Register - 201 / 409",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": "{{baseUrl}}/api/auth/register",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"fullName\": \"Demo User\",\n  \"email\": \"{{demoEmail}}\",\n  \"password\": \"{{password}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Created user\", () => pm.expect(pm.response.code).to.eql(201));"
+            ]
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.collectionVariables.set('demoEmail', 'week5.' + Date.now() + '@example.com');"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "02 Login - JWT",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": "{{baseUrl}}/api/auth/login",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{demoEmail}}\",\n  \"password\": \"{{password}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Login successful\", () => pm.expect(pm.response.code).to.eql(200));",
+              "if (pm.response.code === 200) { pm.collectionVariables.set('token', pm.response.json().token); }"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "03 Me - JWT claims",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}",
+            "type": "text"
+          }
+        ],
+        "url": "{{baseUrl}}/api/auth/me"
+      },
+      "response": []
+    },
+    {
+      "name": "04 Create Student - 201 Location",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": "{{baseUrl}}/api/students",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"fullName\": \"Sara Demo\",\n  \"email\": \"{{studentEmail}}\",\n  \"age\": 21,\n  \"department\": \"Cybersecurity\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"201 and Location\", () => {pm.expect(pm.response.code).to.eql(201);pm.expect(pm.response.headers.has('Location')).to.eql(true);});",
+              "if (pm.response.code === 201) { pm.collectionVariables.set('studentId', pm.response.json().id); }"
+            ]
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.collectionVariables.set('studentEmail', 'student.' + Date.now() + '@example.com');"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "05 Get Students - search / filter / pagination",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}",
+            "type": "text"
+          }
+        ],
+        "url": "{{baseUrl}}/api/students?search=sara&department=Cybersecurity&minAge=18&maxAge=30&page=1&pageSize=5"
+      },
+      "response": []
+    },
+    {
+      "name": "06 Get Student by Id",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}",
+            "type": "text"
+          }
+        ],
+        "url": "{{baseUrl}}/api/students/{{studentId}}"
+      },
+      "response": []
+    },
+    {
+      "name": "07 Update Student",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": "{{baseUrl}}/api/students/{{studentId}}",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"fullName\": \"Sara Updated\",\n  \"email\": \"{{studentEmail}}\",\n  \"age\": 22,\n  \"department\": \"Computer Science\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "08 Delete Student - 204",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}",
+            "type": "text"
+          }
+        ],
+        "url": "{{baseUrl}}/api/students/{{studentId}}"
+      },
+      "response": []
+    },
+    {
+      "name": "09 Get deleted student - 404",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}",
+            "type": "text"
+          }
+        ],
+        "url": "{{baseUrl}}/api/students/{{studentId}}"
+      },
+      "response": []
+    },
+    {
+      "name": "10 Health",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/health"
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5080"
+    },
+    {
+      "key": "token",
+      "value": ""
+    },
+    {
+      "key": "studentId",
+      "value": ""
+    },
+    {
+      "key": "studentEmail",
+      "value": ""
+    },
+    {
+      "key": "demoEmail",
+      "value": ""
+    },
+    {
+      "key": "password",
+      "value": "StrongP@ssw0rd2026"
+    }
+  ]
+}
