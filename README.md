@@ -2,6 +2,19 @@
 
 **مشروع كامل المصدر** باستخدام C# وASP.NET Core (.NET 10)، مع قواعد بيانات فعلية، Swagger UI، مصادقة JWT، وعمليات CRUD. **لا يحتوي المشروع على أي كود Flutter.**
 
+
+## Live Deployment
+
+**Swagger UI (Live API):**
+https://week5-students-api.onrender.com/swagger/index.html
+
+**Health Check:**
+https://week5-students-api.onrender.com/health
+
+**GitHub Repository:**
+https://github.com/cloproo/Week5-Students-API
+
+
 ## 1) المكونات
 
 - `StudentApi/Controllers/AuthController.cs`: التسجيل وتسجيل الدخول والاستعلام `me`.
